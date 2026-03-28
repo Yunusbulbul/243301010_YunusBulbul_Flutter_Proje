@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 void main() {
   runApp(const MyApp());
 }
-
+//deneme
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -32,10 +32,11 @@ class MyApp extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.center, 
-            child: Text("Fatura Takip Uygulaması"),
+            child: Text("Fatura Takip Uygulamaı  "),
           ),
             ],
           
+
         ),
         )
         )

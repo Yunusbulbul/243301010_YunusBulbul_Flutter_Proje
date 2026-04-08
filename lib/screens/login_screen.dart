@@ -13,6 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: AppColors.primary,
         title: Text('Fatura Takip',
             style: TextStyle(
@@ -54,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 4),
 
               Text(
-                'Sizin için Güvenli Çözümler',
+                'Su faturalarınızı kolayca takip edin ',
                 style: TextStyle(
                   fontSize: 16,
                   color: AppColors.textDark,
@@ -121,11 +122,98 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+                       
                       ),
                     ),
                   ],
                 ),
               ),
+               SizedBox(height: 20),
+               Container(
+  padding: EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(color: AppColors.border),
+  ),
+  child: Column(
+    children: [
+      TextField(
+        decoration: InputDecoration(
+          hintText: "ornek@mail.com",
+          prefixIcon: Icon(Icons.mail_outline),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      SizedBox(height: 16),
+      SizedBox(height: 16),
+
+TextField(
+  obscureText: true,
+  decoration: InputDecoration(
+    hintText: "******",
+    prefixIcon: Icon(Icons.lock_outline),
+    suffixIcon: Icon(Icons.visibility_off),
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+),
+Align(
+  alignment: Alignment.centerRight,
+  child: TextButton(
+    onPressed: () {},
+    child: Text("Şifremi Unuttum"),
+  ),
+),
+  SizedBox(height: 10),
+
+SizedBox(
+  width: double.infinity,
+  height: 50,
+  child: ElevatedButton(
+    onPressed: () {},
+    style: ElevatedButton.styleFrom(
+      backgroundColor: AppColors.primaryDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: Text(
+      "Giriş Yap",
+      style: TextStyle(fontSize: 18, color: Colors.white),
+    ),
+  ),
+),
+   SizedBox(height: 20),
+
+SizedBox(
+  width: double.infinity,
+  height: 50,
+  child: OutlinedButton(
+    onPressed: () {},
+    style: OutlinedButton.styleFrom(
+      side: BorderSide(color: AppColors.primaryDark),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: Text(
+      "Kayıt Ol",
+      style: TextStyle(color: AppColors.primaryDark),
+    ),
+  ),
+),
+    ],
+  ),
+)
+
             ],
           ),
         ),

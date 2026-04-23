@@ -13,7 +13,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: AppColors.primary,
         title: Text('Fatura Takip',
             style: TextStyle(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../constants/app_colors.dart';
-
+import 'fatura_screen.dart';
 class LoginScreen extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -9,19 +10,57 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool isCustomerSelected = true;
 
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+Future<void> login() async {
+  try {
+    final response = await Supabase.instance.client
+        .from('kullanici')
+        .select()
+        .eq('email', emailController.text.trim())
+        .eq('sifre', passwordController.text.trim());
+
+    if (response.isNotEmpty) {
+      final kullanici = response.first;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Giriş başarılı")),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FaturalarScreen(
+            kullaniciId: kullanici['kullanici_id'],
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email veya şifre yanlış")),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Hata: $e")),
+    );
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        title: Text('Fatura Takip',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 35,
-              ),
-      ),
-       centerTitle: true, 
+        title: Text(
+          'Fatura Takip',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 35,
+          ),
+        ),
+        centerTitle: true,
       ),
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -29,9 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             children: [
-              SizedBox(height: 10),
-
-
               SizedBox(height: 30),
 
               Icon(
@@ -51,18 +87,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              SizedBox(height: 4),
-
-              Text(
-                'Su faturalarınızı kolayca takip edin ',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textDark,
-                ),
-              ),
-
               SizedBox(height: 30),
 
+              // SEÇİM
               Container(
                 height: 50,
                 decoration: BoxDecoration(
@@ -79,11 +106,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           });
                         },
                         child: Container(
-                          decoration: BoxDecoration(
-                            color: isCustomerSelected
-                                ? AppColors.primary
-                                : Colors.transparent,
-                          ),
+                          color: isCustomerSelected
+                              ? AppColors.primary
+                              : Colors.transparent,
                           child: Center(
                             child: Text(
                               'Müşteri',
@@ -105,14 +130,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           });
                         },
                         child: Container(
-                          decoration: BoxDecoration(
-                            color: !isCustomerSelected
-                                ? AppColors.primary
-                                : Colors.transparent,
-                          ),
+                          color: !isCustomerSelected
+                              ? AppColors.primary
+                              : Colors.transparent,
                           child: Center(
                             child: Text(
-                              'Kurum',
+                              'Yönetici',
                               style: TextStyle(
                                 color: !isCustomerSelected
                                     ? Colors.white
@@ -121,98 +144,71 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                       
                       ),
                     ),
                   ],
                 ),
               ),
-               SizedBox(height: 20),
-               Container(
-  padding: EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(color: AppColors.border),
-  ),
-  child: Column(
-    children: [
-      TextField(
-        decoration: InputDecoration(
-          hintText: "ornek@mail.com",
-          prefixIcon: Icon(Icons.mail_outline),
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-      SizedBox(height: 16),
-      SizedBox(height: 16),
 
-TextField(
-  obscureText: true,
-  decoration: InputDecoration(
-    hintText: "******",
-    prefixIcon: Icon(Icons.lock_outline),
-    suffixIcon: Icon(Icons.visibility_off),
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-  ),
-),
-Align(
-  alignment: Alignment.centerRight,
-  child: TextButton(
-    onPressed: () {},
-    child: Text("Şifremi Unuttum"),
-  ),
-),
-  SizedBox(height: 10),
+              SizedBox(height: 20),
 
-SizedBox(
-  width: double.infinity,
-  height: 50,
-  child: ElevatedButton(
-    onPressed: () {},
-    style: ElevatedButton.styleFrom(
-      backgroundColor: AppColors.primaryDark,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-    child: Text(
-      "Giriş Yap",
-      style: TextStyle(fontSize: 18, color: Colors.white),
-    ),
-  ),
-),
-   SizedBox(height: 20),
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Column(
+                  children: [
+                    // EMAIL
+                    TextField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        hintText: isCustomerSelected
+                            ? "ornek@mail.com"
+                            : "kullanici adi",
+                        prefixIcon: Icon(Icons.person),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
 
-SizedBox(
-  width: double.infinity,
-  height: 50,
-  child: OutlinedButton(
-    onPressed: () {},
-    style: OutlinedButton.styleFrom(
-      side: BorderSide(color: AppColors.primaryDark),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-    child: Text(
-      "Kayıt Ol",
-      style: TextStyle(color: AppColors.primaryDark),
-    ),
-  ),
-),
-    ],
-  ),
-)
+                    SizedBox(height: 16),
 
+                    // ŞİFRE
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        hintText: "******",
+                        prefixIcon: Icon(Icons.lock_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
+
+                    // GİRİŞ BUTONU
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryDark,
+                        ),
+                        child: Text(
+                          "Giriş Yap",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

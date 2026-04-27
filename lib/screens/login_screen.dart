@@ -3,6 +3,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../constants/app_colors.dart';
 import 'fatura_screen.dart';
 class LoginScreen extends StatefulWidget {
+  final Function(bool)? onThemeChanged;
+  final bool darkMode;
+  const LoginScreen({
+    super.key,
+    this.onThemeChanged,
+       this.darkMode = false,
+  });
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -22,19 +30,22 @@ Future<void> login() async {
 
     if (response.isNotEmpty) {
       final kullanici = response.first;
-
+await Supabase.instance.client.from('giris_loglari').insert({
+  'kullanici_id': kullanici['kullanici_id'],
+});
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Giriş başarılı")),
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FaturalarScreen(
-            kullaniciId: kullanici['kullanici_id'],
-          ),
-        ),
-      );
+     Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(
+    builder: (context) => FaturalarScreen(
+      kullaniciId: kullanici['kullanici_id'],
+
+    ),
+  ),
+);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Email veya şifre yanlış")),
@@ -202,7 +213,7 @@ Future<void> login() async {
                         ),
                         child: Text(
                           "Giriş Yap",
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(fontSize: 18 , color: Colors.white),
                         ),
                       ),
                     ),

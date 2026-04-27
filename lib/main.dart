@@ -13,12 +13,26 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool darkMode = false;
+
+  void toggleTheme(bool value) {
+    setState(() {
+      darkMode = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
-    );
+   return MaterialApp(
+  debugShowCheckedModeBanner: false,
+  home: LoginScreen(),
+);
   }
-}
+} 

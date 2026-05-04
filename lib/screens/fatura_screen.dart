@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'profile_screen.dart';
+import 'analiz_screen.dart';
 class FaturalarScreen extends StatefulWidget {
   final int? kullaniciId;
 
@@ -13,7 +14,7 @@ class FaturalarScreen extends StatefulWidget {
 
 class _FaturalarScreenState extends State<FaturalarScreen> {
   final supabase = Supabase.instance.client;
-
+  int selectedIndex = 0;
   bool isLoading = true;
  
   String hataMesaji = '';
@@ -115,17 +116,17 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F5FA),
+      backgroundColor: const Color.fromARGB(255, 202, 202, 202),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1565A9),
+        backgroundColor: const Color.fromARGB(255, 249, 250, 251),
         elevation: 0,
-        centerTitle: true,
+        //centerTitle: true,
         title: const Text(
           'Fatura Takip',
           style: TextStyle(
-            color: Colors.white,
+            color: Color(0xFF1565A9),
             fontWeight: FontWeight.bold,
-            fontSize: 22,
+            fontSize: 28,
           ),
         ),
      actions: [
@@ -148,7 +149,7 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
       },
       child: CircleAvatar(
         radius: 20,
-        backgroundColor: Colors.white.withOpacity(0.2),
+        backgroundColor: const Color(0xFF1565A9),
         child: const Icon(
           Icons.person,
           color: Colors.white,
@@ -159,38 +160,18 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
   ),
 ],
       ),
-      body: RefreshIndicator(
-        onRefresh: faturalariGetir,
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : hataMesaji.isNotEmpty
-                ? ListView(
-                    children: [
-                      const SizedBox(height: 120),
-                      Center(child: Text(hataMesaji)),
-                    ],
-                  )
-                : faturalar.isEmpty
-                    ? ListView(
-                        children: const [
-                          SizedBox(height: 120),
-                          Center(child: Text('Gösterilecek fatura bulunamadı')),
-                        ],
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                        itemCount: faturalar.length,
-                        itemBuilder: (context, index) {
-                          final fatura = faturalar[index] as Map<String, dynamic>;
-                          return FaturaCard(
-                            fatura: fatura,
-                            formatTarih: formatTarih,
-                            durumRenk: durumRenk,
-                            onOde: () => odemeYap(fatura),
-                          );
-                        },
-                      ),
-      ),
+     body: IndexedStack(
+  index: selectedIndex,
+  children: [
+    _faturalarBody(),
+    const Center(
+      child: Text("Ödeme Sayfası"),
+    ),
+    AnalizScreen(
+  kullaniciId: widget.kullaniciId!,
+),
+  ],
+),
      bottomNavigationBar: Container(
   height: 84,
   decoration: const BoxDecoration(
@@ -206,7 +187,9 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
       _BottomNavItem(
         icon: Icons.receipt_long,
         label: 'Faturalar',
-        onTap: () {},
+        onTap: () {setState(() {
+      selectedIndex = 0;
+    });},
       ),
       _BottomNavItem(
         icon: Icons.credit_card,
@@ -216,7 +199,9 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
       _BottomNavItem(
         icon: Icons.bar_chart,
         label: 'Analiz',
-        onTap: () {},
+        onTap: () {  setState(() {
+    selectedIndex = 2;
+  });},
       ),
  
           
@@ -225,6 +210,46 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
 ),
     );
   }
+  Widget _faturalarBody() {
+  return RefreshIndicator(
+    onRefresh: faturalariGetir,
+    child: isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : hataMesaji.isNotEmpty
+            ? ListView(
+                children: [
+                  const SizedBox(height: 120),
+                  Center(child: Text(hataMesaji)),
+                ],
+              )
+            : faturalar.isEmpty
+                ? ListView(
+                    children: const [
+                      SizedBox(height: 120),
+                      Center(
+                        child: Text(
+                          'Gösterilecek fatura bulunamadı',
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                    itemCount: faturalar.length,
+                    itemBuilder: (context, index) {
+                      final fatura =
+                          faturalar[index] as Map<String, dynamic>;
+
+                      return FaturaCard(
+                        fatura: fatura,
+                        formatTarih: formatTarih,
+                        durumRenk: durumRenk,
+                        onOde: () => odemeYap(fatura),
+                      );
+                    },
+                  ),
+  );
+}
 }
 class FaturaCard extends StatelessWidget {
   final Map<String, dynamic> fatura;

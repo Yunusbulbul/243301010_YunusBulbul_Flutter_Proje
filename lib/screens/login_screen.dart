@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../constants/app_colors.dart';
+import 'register_screen.dart';
 import 'fatura_screen.dart';
+
 class LoginScreen extends StatefulWidget {
   final Function(bool)? onThemeChanged;
   final bool darkMode;
@@ -217,6 +219,17 @@ await Supabase.instance.client.from('giris_loglari').insert({
                         ),
                       ),
                     ),
+                 TextButton(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RegisterScreen(),
+      ),
+    );
+  },
+  child: const Text("Kayıt Ol"),
+),
                   ],
                 ),
               ),

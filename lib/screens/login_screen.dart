@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../constants/app_colors.dart';
 import 'register_screen.dart';
 import 'fatura_screen.dart';
-
+import 'yonetici_home_screen.dart';
 class LoginScreen extends StatefulWidget {
   final Function(bool)? onThemeChanged;
   final bool darkMode;
@@ -23,39 +23,146 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 Future<void> login() async {
+
   try {
-    final response = await Supabase.instance.client
-        .from('kullanici')
-        .select()
-        .eq('email', emailController.text.trim())
-        .eq('sifre', passwordController.text.trim());
 
-    if (response.isNotEmpty) {
-      final kullanici = response.first;
-await Supabase.instance.client.from('giris_loglari').insert({
-  'kullanici_id': kullanici['kullanici_id'],
-});
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Giriş başarılı")),
-      );
+    // MÜŞTERİ GİRİŞİ
+    if (isCustomerSelected) {
 
-     Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (context) => FaturalarScreen(
-      kullaniciId: kullanici['kullanici_id'],
+      final response = await Supabase.instance.client
 
-    ),
-  ),
-);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Email veya şifre yanlış")),
-      );
+          .from('kullanici')
+
+          .select()
+
+          .eq(
+            'email',
+            emailController.text.trim(),
+          )
+
+          .eq(
+            'sifre',
+            passwordController.text.trim(),
+          );
+
+      if (response.isNotEmpty) {
+
+        final kullanici = response.first;
+
+        await Supabase.instance.client
+
+            .from('giris_loglari')
+
+            .insert({
+
+          'kullanici_id':
+              kullanici['kullanici_id'],
+        });
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+
+          const SnackBar(
+            content:
+                Text("Giriş başarılı"),
+          ),
+        );
+
+        Navigator.pushReplacement(
+
+          context,
+
+          MaterialPageRoute(
+
+            builder: (context) =>
+                FaturalarScreen(
+
+              kullaniciId:
+                  kullanici['kullanici_id'],
+            ),
+          ),
+        );
+
+      } else {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+
+          const SnackBar(
+
+            content: Text(
+              "Email veya şifre yanlış",
+            ),
+          ),
+        );
+      }
+
     }
+
+    // YÖNETİCİ GİRİŞİ
+    else {
+
+      final response = await Supabase.instance.client
+
+          .from('yonetici')
+
+          .select()
+
+          .eq(
+            'kullanici_ad',
+            emailController.text.trim(),
+          )
+
+          .eq(
+            'sifre',
+            passwordController.text.trim(),
+          )
+
+          .maybeSingle();
+
+      if (response != null) {
+
+        Navigator.pushReplacement(
+
+          context,
+
+          MaterialPageRoute(
+
+            builder: (context) =>
+                YoneticiHomeScreen(
+
+              yoneticiId:
+                  response['yonetici_id'],
+
+              firmaId:
+                  response['firma_id'],
+            ),
+          ),
+        );
+
+      } else {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+
+          const SnackBar(
+
+            content: Text(
+              "Yönetici bilgileri yanlış",
+            ),
+          ),
+        );
+      }
+    }
+
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Hata: $e")),
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+
+      SnackBar(
+        content: Text("Hata: $e"),
+      ),
     );
   }
 }

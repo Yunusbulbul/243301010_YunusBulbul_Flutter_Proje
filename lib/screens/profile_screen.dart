@@ -43,7 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .select()
           .eq('kullanici_id', widget.kullaniciId)
           .order('giris_tarihi', ascending: false)
-          .limit(5);
+          ;
 
       setState(() {
         kullanici = kullaniciData;
@@ -93,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             return ListTile(
               leading: const Icon(Icons.history),
-              title: Text('${index + 1}. giriş'),
+              title: Text('Giriş'),
               subtitle: Text(formatTarih(log['giris_tarihi'])),
             );
           },

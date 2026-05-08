@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'profile_screen.dart';
 import 'analiz_screen.dart';
+import 'odeme_screen.dart';
 class FaturalarScreen extends StatefulWidget {
   final int? kullaniciId;
 
@@ -13,10 +14,11 @@ class FaturalarScreen extends StatefulWidget {
 }
 
 class _FaturalarScreenState extends State<FaturalarScreen> {
+  
   final supabase = Supabase.instance.client;
   int selectedIndex = 0;
   bool isLoading = true;
- 
+ Map<String, dynamic>? secilenFatura;
   String hataMesaji = '';
   List<dynamic> faturalar = [];
 
@@ -164,9 +166,21 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
   index: selectedIndex,
   children: [
     _faturalarBody(),
-    const Center(
-      child: Text("Ödeme Sayfası"),
-    ),
+   OdemeScreen(
+
+  fatura: secilenFatura,
+
+  faturalar: faturalar,
+
+  odemeBasarili: () async {
+
+    await faturalariGetir();
+
+    setState(() {
+      selectedIndex = 0;
+    });
+  },
+),
     AnalizScreen(
   kullaniciId: widget.kullaniciId!,
 ),
@@ -189,13 +203,21 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
         label: 'Faturalar',
         onTap: () {setState(() {
       selectedIndex = 0;
+      Map<String, dynamic>? secilenFatura;
     });},
       ),
       _BottomNavItem(
-        icon: Icons.credit_card,
-        label: 'Ödeme',
-        onTap: () {},
-      ),
+  icon: Icons.credit_card,
+  label: 'Ödeme',
+  onTap: () {
+
+    setState(() {
+
+      selectedIndex = 1;
+
+    });
+  },
+),
       _BottomNavItem(
         icon: Icons.bar_chart,
         label: 'Analiz',
@@ -244,7 +266,16 @@ class _FaturalarScreenState extends State<FaturalarScreen> {
                         fatura: fatura,
                         formatTarih: formatTarih,
                         durumRenk: durumRenk,
-                        onOde: () => odemeYap(fatura),
+                       onOde: () {
+
+  setState(() {
+
+    secilenFatura = fatura;
+
+    selectedIndex = 1;
+
+  });
+},
                       );
                     },
                   ),

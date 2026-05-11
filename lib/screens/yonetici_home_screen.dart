@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'musteriler_screen.dart';
+import 'fatura_olustur_screen.dart';
+import 'fatura_musteri_sec_screen.dart';
+import 'login_screen.dart';
 class YoneticiHomeScreen extends StatefulWidget {
 
   final int yoneticiId;
@@ -24,6 +27,7 @@ class _YoneticiHomeScreenState
   final supabase = Supabase.instance.client;
 String seciliMenu = 'Dashboard';
 int seciliIndex = 0;
+int? seciliKullaniciId;
   final GlobalKey<ScaffoldState> scaffoldKey =
       GlobalKey<ScaffoldState>();
 
@@ -214,19 +218,26 @@ int seciliIndex = 0;
         ],
       ),
 
-     body: IndexedStack(
+     body:
 
-  index: seciliIndex,
+  
 
-  children: [
+seciliIndex == 0
 
-    dashboardBody(),
+    ? dashboardBody()
 
-    MusterilerScreen(
-      firmaId: widget.firmaId,
-    ),
-  ],
-),
+    : seciliIndex == 1
+
+        ? MusterilerScreen(
+            firmaId:
+                widget.firmaId,
+          )
+
+        : FaturaMusteriSecScreen(
+            firmaId:
+                widget.firmaId,
+          ),
+
     );    
   }
 
@@ -446,18 +457,28 @@ Navigator.pop(context);
   },
 ),
 
-              drawerItem(
-                Icons.receipt_long,
-                "Faturalar",
-                false,
-                () {},  
-              ),
+drawerItem(
 
-              drawerItem(
-                Icons.edit_note,
-                "Tüketim Gir",
-                false   ,
-                () {},  
+  Icons.edit_note,
+
+  "Fatura Oluştur",
+
+  seciliMenu ==
+      "Fatura Oluştur",
+
+  () {
+
+    setState(() {
+
+      seciliMenu =
+          "Fatura Oluştur";
+
+      seciliIndex = 2;
+    });
+
+    Navigator.pop(context);
+  },
+
               ),
 
               drawerItem(
@@ -487,7 +508,25 @@ Navigator.pop(context);
                 Icons.logout,
                 "Çıkış Yap",
                 false,
-                () {},
+               () async {
+
+  await Supabase.instance.client.auth.signOut();
+
+  if (context.mounted) {
+
+    Navigator.pushAndRemoveUntil(
+
+      context,
+
+      MaterialPageRoute(
+
+        builder: (context) => const LoginScreen(),
+      ),
+
+      (route) => false,
+    );
+  }
+},
               ),
             ],
           ),

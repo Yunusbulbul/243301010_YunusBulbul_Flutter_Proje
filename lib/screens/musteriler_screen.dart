@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'musteri_detay_screen.dart';
 
 class MusterilerScreen extends StatefulWidget {
 
@@ -215,7 +216,28 @@ class _MusterilerScreenState
                               .toString(),
                         );
 
-                        return Container(
+                       return GestureDetector(
+
+  onTap: () {
+
+    Navigator.push(
+
+      context,
+
+      MaterialPageRoute(
+
+        builder: (context) =>
+
+            MusteriDetayScreen(
+
+          kullaniciId:
+              musteri['kullanici_id'],
+        ),
+      ),
+    );
+  },
+
+  child: Container(
 
                           margin:
                               const EdgeInsets.only(
@@ -353,6 +375,7 @@ class _MusterilerScreenState
                               ),
                             ],
                           ),
+  ),
                         );
                       },
                     ),

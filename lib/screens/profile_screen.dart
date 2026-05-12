@@ -262,13 +262,7 @@ final textColor = Colors.black;
                   );
                 },
               ),
-              _clickRow(
-                icon: Icons.notifications,
-                text: 'Bildirim Tercihleri',
-                value: '',
-                textColor: textColor,
-                onTap: () {},
-              ),
+             
              
             ],
           ),

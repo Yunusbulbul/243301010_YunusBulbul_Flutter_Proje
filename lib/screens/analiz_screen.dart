@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AnalizScreen extends StatefulWidget {
+
   final int kullaniciId;
 
   const AnalizScreen({
@@ -11,364 +12,843 @@ class AnalizScreen extends StatefulWidget {
   });
 
   @override
-  State<AnalizScreen> createState() => _AnalizScreenState();
+  State<AnalizScreen> createState() =>
+      _AnalizScreenState();
 }
 
-class _AnalizScreenState extends State<AnalizScreen> {
-final aylar = [
-  "Oca",
-  "Şub",
-  "Mar",
-  "Nis",
-  "May",
-  "Haz",
-  "Tem",
-  "Ağu",
-  "Eyl",
-  "Eki",
-  "Kas",
-  "Ara",
-];
-  final supabase = Supabase.instance.client;
+class _AnalizScreenState
+    extends State<AnalizScreen> {
 
- List<FlSpot> tuketimSpots = [];
-List<FlSpot> fiyatSpots = [];
-List<FlSpot> tutarSpots = [];
+  final supabase =
+      Supabase.instance.client;
 
-  bool isLoading = true;
+  bool loading = true;
+
+  int seciliPeriyot = 6;
+
+  List<dynamic> faturalar = [];
+
+  List<String> aylar = [];
+
+  List<FlSpot> tuketimSpots = [];
+
+  List<BarChartGroupData>
+      tutarBars = [];
+
+  double toplamTuketim = 0;
+
+  double toplamOdeme = 0;
+
+  int odenenFatura = 0;
+
+  int odenmeyenFatura = 0;
+
+  double maxTuketimY = 50;
+
+  double maxTutarY = 100;
 
   @override
   void initState() {
+
     super.initState();
+
     verileriGetir();
   }
-Future<void> verileriGetir() async {
-  try {
 
-    print("ANALIZ BASLADI");
-
-   final response = await supabase.rpc(
-  'kullanici_fatura_analiz',
-      params: {
-        'p_kullanici_id': widget.kullaniciId,
-      },
-    );
-
-    print("RESPONSE:");
-    print(response);
-print(response.first.keys);
-List<FlSpot> yeniTuketimSpots = [];
-List<FlSpot> yeniFiyatSpots = [];
-List<FlSpot> yeniTutarSpots = [];
-
-for (int i = 0; i < response.length; i++) {
-
-  final veri = response[i];
-
-  yeniTuketimSpots.add(
-    FlSpot(
-      i.toDouble(),
-      (veri['tuketim_miktari'] as num).toDouble(),
-    ),
-  );
-
-  yeniFiyatSpots.add(
-    FlSpot(
-      i.toDouble(),
-      (veri['birim_fiyat'] as num).toDouble(),
-    ),
-  );
-
-  yeniTutarSpots.add(
-    FlSpot(
-      i.toDouble(),
-      (veri['toplam_tutar'] as num).toDouble(),
-    ),
-  );
-}
-
-setState(() {
-
-  tuketimSpots = yeniTuketimSpots;
-
-  fiyatSpots = yeniFiyatSpots;
-
-  tutarSpots = yeniTutarSpots;
-
-  isLoading = false;
-});
-
-  } catch (e) {
-
-    print("ANALIZ HATASI:");
-    print(e);
+  Future<void> verileriGetir() async {
 
     setState(() {
-      isLoading = false;
+      loading = true;
     });
+
+    try {
+
+      final response =
+          await supabase.rpc(
+
+        'kullanici_faturalari_getir',
+
+        params: {
+          'p_kullanici_id':
+              widget.kullaniciId,
+        },
+      );
+
+      final simdi = DateTime.now();
+
+      final filtreli = response.where((f) {
+
+        final tarih = DateTime.parse(
+          f['fatura_tarihi'],
+        );
+
+        final filtreTarihi = DateTime(
+  simdi.year,
+  simdi.month - seciliPeriyot,
+);
+
+return tarih.isAfter(
+  filtreTarihi,
+);
+
+      }).toList();
+
+      filtreli.sort((a, b) {
+
+        return DateTime.parse(
+          a['fatura_tarihi'],
+        ).compareTo(
+
+          DateTime.parse(
+            b['fatura_tarihi'],
+          ),
+        );
+      });
+
+      List<FlSpot>
+          yeniTuketim = [];
+
+      List<BarChartGroupData>
+          yeniTutar = [];
+
+      List<String>
+          yeniAylar = [];
+
+      double tuketimToplam = 0;
+
+      double odemeToplam = 0;
+
+      int odendi = 0;
+
+      int odenmedi = 0;
+
+      double maxTuketim = 0;
+
+      double maxTutar = 0;
+
+      for (int i = 0;
+          i < filtreli.length;
+          i++) {
+
+        final veri = filtreli[i];
+
+        final tarih = DateTime.parse(
+          veri['fatura_tarihi'],
+        );
+
+        final ay =
+            '${tarih.month}/${tarih.year}';
+
+        yeniAylar.add(ay);
+
+        final tuketim =
+            (veri['tuketim_miktari']
+                    as num)
+                .toDouble();
+
+        final tutar =
+            (veri['toplam_tutar']
+                    as num)
+                .toDouble();
+
+        tuketimToplam += tuketim;
+
+        odemeToplam += tutar;
+
+        if (veri['durum'] ==
+            'Odendi') {
+
+          odendi++;
+
+        } else {
+
+          odenmedi++;
+        }
+
+        if (tuketim > maxTuketim) {
+          maxTuketim = tuketim;
+        }
+
+        if (tutar > maxTutar) {
+          maxTutar = tutar;
+        }
+
+        yeniTuketim.add(
+
+          FlSpot(
+            i.toDouble(),
+            tuketim,
+          ),
+        );
+
+        yeniTutar.add(
+
+          BarChartGroupData(
+
+            x: i,
+
+            barRods: [
+
+              BarChartRodData(
+                toY: tutar,
+                width: 18,
+                borderRadius:
+                    BorderRadius.circular(
+                  6,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      setState(() {
+
+        faturalar = filtreli;
+
+        aylar = yeniAylar;
+
+        tuketimSpots =
+            yeniTuketim;
+
+        tutarBars =
+            yeniTutar;
+
+        toplamTuketim =
+            tuketimToplam;
+
+        toplamOdeme =
+            odemeToplam;
+
+        odenenFatura =
+            odendi;
+
+        odenmeyenFatura =
+            odenmedi;
+
+        maxTuketimY =
+            maxTuketim * 1.3;
+
+        maxTutarY =
+            maxTutar * 1.3;
+
+        loading = false;
+      });
+
+    } catch (e) {
+
+      debugPrint(e.toString());
+
+      setState(() {
+        loading = false;
+      });
+    }
   }
-}
+
+  Widget ustKart(
+    String baslik,
+    String deger,
+    IconData icon,
+  ) {
+
+    return Expanded(
+
+      child: Container(
+
+        padding:
+            const EdgeInsets.all(16),
+
+        decoration: BoxDecoration(
+
+          color: Colors.white,
+
+          borderRadius:
+              BorderRadius.circular(
+            20,
+          ),
+        ),
+
+        child: Column(
+
+          children: [
+
+            Icon(
+              icon,
+              size: 34,
+              color:
+                  const Color(0xFF2D1457),
+            ),
+
+            const SizedBox(
+              height: 10,
+            ),
+
+            Text(
+
+              deger,
+
+              style: const TextStyle(
+
+                fontSize: 22,
+
+                fontWeight:
+                    FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(
+              height: 6,
+            ),
+
+            Text(
+              baslik,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
-    if (isLoading) {
+    if (loading) {
+
       return const Center(
-        child: CircularProgressIndicator(),
+        child:
+            CircularProgressIndicator(),
       );
     }
-    if (tutarSpots.isEmpty) {
-  return const Center(
-    child: Text(
-      "Analiz verisi bulunamadı",
-      style: TextStyle(fontSize: 18),
-    ),
-  );
-}
 
-return SingleChildScrollView(
-  padding: const EdgeInsets.all(16),
+    return RefreshIndicator(
 
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+      onRefresh: verileriGetir,
 
-    children: [
+      child: SingleChildScrollView(
 
-      const Text(
-        "Fatura Analizi",
-        style: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
+        physics:
+            const AlwaysScrollableScrollPhysics(),
+
+        padding:
+            const EdgeInsets.all(
+          16,
         ),
-      ),
 
-      const SizedBox(height: 20),
+        child: Column(
 
-      Row(
-        children: [
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
 
-          Expanded(
-            child: _infoCard(
-              "Toplam Fatura",
-              "${tutarSpots.length}",
-              Icons.receipt_long,
+          children: [
+
+            Row(
+
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+
+              children: [
+
+                const Text(
+
+                  "Fatura Analizi",
+
+                  style: TextStyle(
+
+                    fontSize: 28,
+
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+
+                DropdownButton<int>(
+
+                  value:
+                      seciliPeriyot,
+
+                  items: const [
+
+                    DropdownMenuItem(
+                      value: 3,
+                      child: Text(
+                        "3 Ay",
+                      ),
+                    ),
+
+                    DropdownMenuItem(
+                      value: 6,
+                      child: Text(
+                        "6 Ay",
+                      ),
+                    ),
+
+                    DropdownMenuItem(
+                      value: 12,
+                      child: Text(
+                        "12 Ay",
+                      ),
+                    ),
+                  ],
+
+                  onChanged: (value) {
+
+                    setState(() {
+
+                      seciliPeriyot =
+                          value!;
+                    });
+
+                    verileriGetir();
+                  },
+                ),
+              ],
             ),
-          ),
 
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: _infoCard(
-              "Analiz",
-              "Aktif",
-              Icons.analytics,
+            const SizedBox(
+              height: 20,
             ),
-          ),
 
-        ],
-      ),
+            Row(
 
-      const SizedBox(height: 24),
+              children: [
 
-      _chartCard(
-        title: "Tüketim Grafiği",
-        spots: tuketimSpots,
-      ),
+                ustKart(
+                  "Toplam Tüketim",
+                  toplamTuketim
+                      .toStringAsFixed(0),
+                  Icons.water_drop,
+                ),
 
-      const SizedBox(height: 20),
+                const SizedBox(
+                  width: 12,
+                ),
 
-      _chartCard(
-        title: "Birim Fiyat Grafiği",
-        spots: fiyatSpots,
-      ),
+                ustKart(
+                  "Toplam Ödeme",
+                  '₺ ${toplamOdeme.toStringAsFixed(0)}',
+                  Icons.payments,
+                ),
+              ],
+            ),
 
-      const SizedBox(height: 20),
+            const SizedBox(
+              height: 12,
+            ),
 
-      _chartCard(
-        title: "Fatura Tutarı",
-        spots: tutarSpots,
-      ),
+            Row(
 
-      const SizedBox(height: 100),
+              children: [
 
-    ],
+                ustKart(
+                  "Ödenen",
+                  odenenFatura
+                      .toString(),
+                  Icons.check_circle,
+                ),
+
+                const SizedBox(
+                  width: 12,
+                ),
+
+                ustKart(
+                  "Bekleyen",
+                  odenmeyenFatura
+                      .toString(),
+                  Icons.warning,
+                ),
+              ],
+            ),
+
+            const SizedBox(
+              height: 24,
+            ),
+
+            Container(
+
+              padding:
+                  const EdgeInsets.all(
+                18,
+              ),
+
+              decoration: BoxDecoration(
+
+                color: Colors.white,
+
+                borderRadius:
+                    BorderRadius.circular(
+                  20,
+                ),
+              ),
+
+              child: Column(
+
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                children: [
+
+                  const Text(
+
+                    "Tüketim Grafiği",
+
+                    style: TextStyle(
+
+                      fontSize: 20,
+
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  SizedBox(
+
+                    height: 320,
+
+                    child: LineChart(
+
+                      LineChartData(
+clipData: const FlClipData.none(),
+                        minY: 0,
+
+                        maxY:
+                            maxTuketimY,
+
+                        lineBarsData: [
+
+                          LineChartBarData(
+
+                            spots:
+                                tuketimSpots,
+
+                            isCurved: true,
+
+                            barWidth: 4,
+
+                            dotData:
+                                const FlDotData(
+                              show: true,
+                            ),
+                          ),
+                        ],
+
+                        titlesData:
+                            FlTitlesData(
+
+                          rightTitles:
+                              const AxisTitles(
+                            sideTitles:
+                                SideTitles(
+                                  
+                              showTitles:
+                                  false,
+                                  reservedSize: 50,
+                            ),
+                          ),
+
+                          topTitles:
+                              const AxisTitles(
+                            sideTitles:
+                                SideTitles(
+                              showTitles:
+                                  false,
+                            ),
+                          ),
+
+                          bottomTitles:
+                              AxisTitles(
+
+                            sideTitles:
+                                SideTitles(
+
+                              showTitles:
+                                  true,
+
+                              getTitlesWidget:
+                                  (value, meta) {
+if (value < 0) {
+  return const SizedBox();
+}
+                                final index =
+                                    value
+                                        .toInt();
+
+                                if (index <
+                                        0 ||
+                                    index >=
+                                        aylar.length) {
+
+                                  return const SizedBox();
+                                }
+
+                                return Transform.rotate(
+
+  angle: -0.45,
+
+  child: Text(
+
+    aylar[index],
+
+    style: const TextStyle(
+      fontSize: 10,
+    ),
   ),
 );
-
-  }Widget _infoCard(
-  String title,
-  String value,
-  IconData icon,
-) {
-
-  return Container(
-    padding: const EdgeInsets.all(16),
-
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-
-      boxShadow: const [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 8,
-        ),
-      ],
-    ),
-
-    child: Column(
-      children: [
-
-        Icon(
-          icon,
-          size: 34,
-          color: Colors.blue,
-        ),
-
-        const SizedBox(height: 10),
-
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 6),
-
-        Text(title),
-      ],
-    ),
-  );
-}Widget _chartCard({
-  required String title,
-  required List<FlSpot> spots,
-}) {
-
-  return Container(
-    margin: const EdgeInsets.only(bottom: 24),
-    padding: const EdgeInsets.all(16),
-
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-
-      boxShadow: const [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 6,
-        ),
-      ],
-    ),
-
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-
-      children: [
-
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        SizedBox(
-          height: 250,
-
-          child: LineChart(
-
-            LineChartData(
-
-              minY: 0,
-maxY: spots
-        .map((e) => e.y)
-        .reduce((a, b) => a > b ? a : b) + 20,
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: true,
-              ),
-
-              borderData: FlBorderData(
-                show: true,
-              ),
-
-              titlesData: FlTitlesData(
-
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 42,
-                  ),
-                ),
-
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-
-                bottomTitles: AxisTitles(
-
-                  sideTitles: SideTitles(
-
-                    showTitles: true,
-
-                    getTitlesWidget: (value, meta) {
-if (value % 1 != 0) {
-  return const Text('');
-}
-
-int index = value.toInt();
-
-if (index >= 0 && index < aylar.length) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-
-                          child: Text(
-                            aylar[index],
-                            style: const TextStyle(fontSize: 11),
+                              },
+                            ),
                           ),
-                        );
-                      }
-
-                      return const Text('');
-                    },
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-
-              lineBarsData: [
-
-                LineChartBarData(
-
-                  spots: spots,
-
-                  isCurved: false,
-
-                  barWidth: 3,
-
-                  dotData: const FlDotData(
-                    show: true,
-                  ),
-
-                ),
-
-              ],
-
             ),
 
-          ),
+            const SizedBox(
+              height: 24,
+            ),
 
+            Container(
+
+              padding:
+                  const EdgeInsets.all(
+                18,
+              ),
+
+              decoration: BoxDecoration(
+
+                color: Colors.white,
+
+                borderRadius:
+                    BorderRadius.circular(
+                  20,
+                ),
+              ),
+
+              child: Column(
+
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                children: [
+
+                  const Text(
+
+                    "Aylık Fatura Tutarları",
+
+                    style: TextStyle(
+
+                      fontSize: 20,
+
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  SizedBox(
+
+                    height: 300,
+
+                    child: BarChart(
+
+                      BarChartData(
+
+                        maxY:
+                            maxTutarY,
+
+                        barGroups:
+                            tutarBars,
+
+                        titlesData:
+                            FlTitlesData(
+
+                          rightTitles:
+                              const AxisTitles(
+                            sideTitles:
+                                SideTitles(
+                              showTitles:
+                                  false,
+                            ),
+                          ),
+
+                          topTitles:
+                              const AxisTitles(
+                            sideTitles:
+                                SideTitles(
+                              showTitles:
+                                  false,
+                            ),
+                          ),
+
+                          bottomTitles:
+                              AxisTitles(
+
+                            sideTitles:
+                                SideTitles(
+
+                              showTitles:
+                                  true,
+
+                              getTitlesWidget:
+                                  (value, meta) {
+
+                                final index =
+                                    value
+                                        .toInt();
+
+                                if (index <
+                                        0 ||
+                                    index >=
+                                        aylar.length) {
+
+                                  return const SizedBox();
+                                }
+
+                                return Transform.rotate(
+
+                                  angle: -0.7,
+
+                                  child: Text(
+
+                                    aylar[
+                                        index],
+
+                                    style:
+                                        const TextStyle(
+                                      fontSize:
+                                          10,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(
+              height: 24,
+            ),
+
+            Container(
+
+              padding:
+                  const EdgeInsets.all(
+                18,
+              ),
+
+              decoration: BoxDecoration(
+
+                color: Colors.white,
+
+                borderRadius:
+                    BorderRadius.circular(
+                  20,
+                ),
+              ),
+
+              child: Column(
+
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                children: [
+
+                  const Text(
+
+                    "Ödeme Durumu",
+
+                    style: TextStyle(
+
+                      fontSize: 20,
+
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  SizedBox(
+
+                    height: 250,
+
+                    child: PieChart(
+
+                      PieChartData(
+
+                        sections: [
+
+                         PieChartSectionData(
+
+  value:
+      odenenFatura
+          .toDouble(),
+
+  title:
+      "Ödendi\n$odenenFatura",
+
+  color: Colors.green,
+
+  radius: 80,
+
+  titleStyle: const TextStyle(
+
+    color: Colors.white,
+
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+                   PieChartSectionData(
+
+  value:
+      odenmeyenFatura
+          .toDouble(),
+
+  title:
+      "Bekliyor\n$odenmeyenFatura",
+
+  color: Colors.red,
+
+  radius: 80,
+
+  titleStyle: const TextStyle(
+
+    color: Colors.white,
+
+    fontWeight: FontWeight.bold,
+  ),
+),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(
+              height: 120,
+            ),
+          ],
         ),
-
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 }

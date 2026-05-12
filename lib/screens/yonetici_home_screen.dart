@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'musteriler_screen.dart';
-import 'fatura_olustur_screen.dart';
+import 'admin_analiz_screen.dart';
 import 'fatura_musteri_sec_screen.dart';
 import 'login_screen.dart';
+import 'nakit_odeme_screen.dart';
+import 'birim_fiyat_screen.dart';
 class YoneticiHomeScreen extends StatefulWidget {
 
   final int yoneticiId;
@@ -34,7 +36,12 @@ int? seciliKullaniciId;
   Map<String, dynamic>? dashboardData;
 
   List<dynamic> sonFaturalar = [];
+List<BarChartGroupData>
+    gelirGrafik = [];
 
+List<String> grafikAylar = [];
+
+double maxGelirY = 100;
   bool loading = true;
 
   @override
@@ -60,6 +67,64 @@ int? seciliKullaniciId;
       );
 
       final faturalarResponse =
+    await supabase.rpc(
+
+  'yonetici_son_faturalar',
+
+  params: {
+    'p_firma_id': widget.firmaId,
+  },
+);
+
+final gelirResponse =
+    await supabase
+
+        .from('fatura_detay')
+
+        .select()
+
+        .eq(
+          'firma_id',
+          widget.firmaId,
+        )
+
+        .gte(
+          'fatura_tarihi',
+
+          DateTime.now()
+
+              .subtract(
+                const Duration(
+                  days: 180,
+                ),
+              )
+
+              .toIso8601String(),
+        );
+    await supabase
+
+        .from('fatura_detay')
+
+        .select()
+
+        .eq(
+          'firma_id',
+          widget.firmaId,
+        )
+
+        .gte(
+          'fatura_tarihi',
+
+          DateTime.now()
+
+              .subtract(
+                const Duration(
+                  days: 180,
+                ),
+              )
+
+              .toIso8601String(),
+        );
           await supabase.rpc(
 
         'yonetici_son_faturalar',
@@ -68,7 +133,70 @@ int? seciliKullaniciId;
           'p_firma_id': widget.firmaId,
         },
       );
+Map<String, double>
+    aylikGelir = {};
 
+List<String> aylar = [];
+
+final now = DateTime.now();
+
+for (int i = 5; i >= 0; i--) {
+
+  final tarih = DateTime(
+    now.year,
+    now.month - i,
+  );
+
+  final key =
+      '${tarih.month}/${tarih.year}';
+
+  aylar.add(key);
+
+  aylikGelir[key] = 0;
+}
+
+for (var item in gelirResponse) {
+
+  final tarih = DateTime.parse(
+    item['fatura_tarihi'],
+  );
+
+  final key =
+      '${tarih.month}/${tarih.year}';
+
+  if (!aylikGelir.containsKey(key)) {
+    continue;
+  }
+
+  if (item['durum'] == 'Odendi') {
+
+    aylikGelir[key] =
+
+        aylikGelir[key]! +
+
+            (item['toplam_tutar'] ?? 0)
+                .toDouble();
+  }
+}
+
+List<BarChartGroupData>
+    grafikData = [];
+
+double enBuyuk = 0;
+
+for (int i = 0; i < aylar.length; i++) {
+
+  final gelir =
+      aylikGelir[aylar[i]]!;
+
+  if (gelir > enBuyuk) {
+    enBuyuk = gelir;
+  }
+
+  grafikData.add(
+    barItem(i, gelir),
+  );
+}
       setState(() {
 
         dashboardData =
@@ -76,7 +204,14 @@ int? seciliKullaniciId;
 
         sonFaturalar =
             faturalarResponse;
+gelirGrafik =
+    grafikData;
 
+grafikAylar =
+    aylar;
+
+maxGelirY =
+    enBuyuk * 1.25;
         loading = false;
       });
 
@@ -233,10 +368,31 @@ seciliIndex == 0
                 widget.firmaId,
           )
 
-        : FaturaMusteriSecScreen(
+        : seciliIndex == 2
+
+            ? FaturaMusteriSecScreen(
+                firmaId:
+                    widget.firmaId,
+              )
+
+            : seciliIndex == 3
+
+                ? NakitOdemeScreen(
+                    firmaId:
+                        widget.firmaId,
+                  )
+    : seciliIndex == 4
+
+        ? AdminAnalizScreen(
             firmaId:
                 widget.firmaId,
-          ),
+          )
+: seciliIndex == 5
+
+    ? BirimFiyatScreen(
+        firmaId: widget.firmaId,
+      )
+                : dashboardBody()
 
     );    
   }
@@ -425,7 +581,7 @@ BarChartGroupData barItem(
                 Icons.dashboard,
                 "Dashboard",
                seciliMenu == "Dashboard",
-              () {
+              ()async {
 
   setState(() {
 
@@ -433,7 +589,7 @@ BarChartGroupData barItem(
     seciliIndex = 0;
 
   });
-
+  await verileriGetir();
   Navigator.pop(context);
 },
               ),
@@ -481,26 +637,81 @@ drawerItem(
 
               ),
 
-              drawerItem(
-                Icons.payments,
-                "Ödemeler",
-                false,
-                () {},
-              ),
+           drawerItem(
 
-              drawerItem(
-                Icons.bar_chart,
-                "Analiz",
-                false,
-                () {},
-              ),
+  Icons.payments,
 
-              drawerItem(
-                Icons.settings,
-                "Ayarlar",
-                false ,
-                () {},
-              ),
+  "Ödemeler",
+
+  seciliMenu == "Ödemeler",
+
+  () {
+
+    setState(() {
+
+      seciliMenu = "Ödemeler";
+
+      seciliIndex = 3;
+    });
+
+    Navigator.pop(context);
+  },
+),
+drawerItem(
+
+  Icons.bar_chart,
+
+  "Analiz",
+
+  seciliMenu == "Analiz",
+
+  () {
+
+    setState(() {
+
+      seciliMenu = "Analiz";
+
+      seciliIndex = 4;
+    });
+Navigator.pop(context);
+
+Future.delayed(
+
+  const Duration(milliseconds: 200),
+
+  () {
+
+    if (mounted) {
+
+      setState(() {});
+    }
+  },
+);
+
+return;
+  
+  },
+),drawerItem(
+
+  Icons.water_drop,
+
+  "Birim Fiyat",
+
+  seciliMenu == "Birim Fiyat",
+
+  () {
+
+    setState(() {
+
+      seciliMenu =
+          "Birim Fiyat";
+
+      seciliIndex = 5;
+    });
+
+    Navigator.pop(context);
+  },
+),
 
               const Spacer(),
 
@@ -606,8 +817,14 @@ drawerItem(
   }
  Widget dashboardBody() {
 
-  return SingleChildScrollView(
+ return RefreshIndicator(
+  onRefresh: () async {
 
+  await verileriGetir();
+
+  setState(() {});
+},
+  child: SingleChildScrollView(
     padding: const EdgeInsets.all(16),
 
     child: Column(
@@ -645,7 +862,7 @@ drawerItem(
 
               child: dashboardCard(
 
-                title: "Bu Ayki Gelir",
+                title: "Gelir",
 
                 value:
                     '₺ ${dashboardData?['aylik_gelir'] ?? 0}',
@@ -790,8 +1007,7 @@ drawerItem(
 
                     alignment:
                         BarChartAlignment.spaceAround,
-
-                    maxY: 60000,
+maxY: maxGelirY,
 
                     gridData:
                         FlGridData(show: true),
@@ -859,49 +1075,62 @@ drawerItem(
 
                           getTitlesWidget:
                               (value, meta) {
+final index = value.toInt();
 
-                            const aylar = [
+if (index < 0 ||
+    index >= grafikAylar.length) {
 
-                              'Oca',
-                              'Şub',
-                              'Mar',
-                              'Nis',
-                              'May',
-                              'Haz'
-                            ];
+  return const SizedBox();
+}
 
-                            return Padding(
+return Padding(
 
-                              padding:
-                                  const EdgeInsets.only(
-                                top: 8,
-                              ),
+  padding:
+      const EdgeInsets.only(
+    top: 10,
+  ),
 
-                              child: Text(
+  child: Transform.rotate(
 
-                                aylar[
-                                    value.toInt()],
+    angle: -0.7,
 
-                                style:
-                                    const TextStyle(
-                                  fontSize: 12,
-                                ),
-                              ),
-                            );
+    child: Text(
+
+      grafikAylar[index],
+
+      style: const TextStyle(
+        fontSize: 10,
+      ),
+    ),
+  ),
+);
+return Padding(
+
+  padding:
+      const EdgeInsets.only(
+    top: 10,
+  ),
+
+  child: Transform.rotate(
+
+    angle: -0.7,
+
+    child: Text(
+
+      grafikAylar[index],
+
+      style: const TextStyle(
+        fontSize: 10,
+      ),
+    ),
+  ),
+);
                           },
                         ),
                       ),
                     ),
 
-                    barGroups: [
-
-                      barItem(0, 18000),
-                      barItem(1, 32000),
-                      barItem(2, 27000),
-                      barItem(3, 48000),
-                      barItem(4, 23000),
-                      barItem(5, 52000),
-                    ],
+             barGroups: gelirGrafik,
                   ),
                 ),
               ),
@@ -997,7 +1226,8 @@ drawerItem(
         ),
       ],
     ),
-  );
+    ),
+);
 }
       
 }

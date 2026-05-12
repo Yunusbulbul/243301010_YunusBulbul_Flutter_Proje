@@ -24,7 +24,11 @@ class _FaturaMusteriSecScreenState
   final supabase = Supabase.instance.client;
 
   List<dynamic> musteriler = [];
+List<dynamic> filtreliMusteriler = [];
 
+TextEditingController
+    aramaController =
+        TextEditingController();
   bool loading = true;
 
   @override
@@ -34,7 +38,32 @@ class _FaturaMusteriSecScreenState
 
     musterileriGetir();
   }
+void musteriAra(String value) {
 
+  setState(() {
+
+    filtreliMusteriler =
+
+        musteriler.where((musteri) {
+
+      final adSoyad =
+
+          '${musteri['ad']} ${musteri['soyad']}'
+              .toLowerCase();
+
+      final tc =
+
+          musteri['tc_no']
+              .toString();
+
+      return adSoyad.contains(
+                value.toLowerCase(),
+              ) ||
+
+          tc.contains(value);
+    }).toList();
+  });
+}
   Future<void> musterileriGetir() async {
 
     try {
@@ -55,6 +84,8 @@ class _FaturaMusteriSecScreenState
 
         musteriler = response;
 
+  filtreliMusteriler =
+      response;
         loading = false;
       });
 
@@ -85,19 +116,74 @@ class _FaturaMusteriSecScreenState
                   CircularProgressIndicator(),
             )
 
-          : ListView.builder(
+         : Column(
+
+    children: [
+
+      Container(
+
+        margin:
+            const EdgeInsets.all(16),
+
+        decoration: BoxDecoration(
+
+          color: Colors.white,
+
+          borderRadius:
+              BorderRadius.circular(
+            18,
+          ),
+        ),
+
+        child: TextField(
+
+          controller:
+              aramaController,
+
+          onChanged:
+              musteriAra,
+
+          decoration: InputDecoration(
+
+            hintText:
+                "Müşteri ara...",
+
+            prefixIcon:
+                const Icon(
+              Icons.search,
+            ),
+
+            border:
+                OutlineInputBorder(
+
+              borderRadius:
+                  BorderRadius.circular(
+                18,
+              ),
+
+              borderSide:
+                  BorderSide.none,
+            ),
+          ),
+        ),
+      ),
+
+      Expanded(
+
+        child: ListView.builder(
 
               padding:
                   const EdgeInsets.all(16),
 
               itemCount:
-                  musteriler.length,
+                  filtreliMusteriler.length,
 
               itemBuilder:
                   (context, index) {
 
                 final musteri =
-                    musteriler[index];
+                 
+    filtreliMusteriler[index];
 
                 return GestureDetector(
 
@@ -202,8 +288,12 @@ class _FaturaMusteriSecScreenState
                     ),
                   ),
                 );
-              },
+                        },
             ),
+          ),
+        ],
+      ),
     );
+
   }
 }

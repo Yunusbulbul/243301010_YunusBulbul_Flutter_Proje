@@ -263,7 +263,12 @@ setState(() {
           .toIso8601String(),
 
   'durum': 'Odenmedi',
+'birim_fiyat':
 
+    double.parse(
+      firma!['birim_fiyat']
+          .toString(),
+    ),
 })
 
     .select()

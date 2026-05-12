@@ -385,7 +385,7 @@ class FaturaCard extends StatelessWidget {
                   ? TextButton(
                       onPressed: () {},
                       child: const Text(
-                        'Makbuz Görüntüle',
+                        '',
                         style: TextStyle(
                           decoration: TextDecoration.underline,
                           fontSize: 14,

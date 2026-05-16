@@ -2,7 +2,22 @@
 Ad Soyad:Yunus Bülbül
 Öğrenci no:243301010
 Uygulama Adı:Fatura Takip
-<img width="1080" height="2424" alt="Screenshot_1778936841" src="https://github.com/user-attachments/assets/a8336bd4-fe4e-427e-bda4-2fe407244f67" />
+
+## Ekran Görüntüleri
+### Giriş Ekranı
+<img src="images/login.png" width="220"/>
+
+### Müşteri Analiz Ekranı
+<img src="images/musteri_analiz.png" width="220"/>
+
+### Ödeme Ekranı
+<img src="images/odeme.png" width="220"/>
+
+### Yönetici Analiz Ekranı
+<img src="images/admin_analiz.png" width="220"/>
+
+### Fatura Oluşturma Ekranı
+<img src="images/fatura_olustur.png" width="220"/>
 
 
 

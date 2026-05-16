@@ -1,7 +1,7 @@
-# fatura_takip
-## Ad Soyad:Yunus Bülbül
-## Öğrenci no:243301010
-## Uygulama Adı:Fatura Takip
+
+### Ad Soyad:Yunus Bülbül
+### Öğrenci no:243301010
+### Uygulama Adı:Fatura Takip
 
 # Test hesap Bilgileri
 ## Yönetici:
@@ -19,9 +19,9 @@
 
 
 # Kullanılan Paketler:
-## - supabase_flutter: Veritabanına bağlanmak .
-## - fl_chart:Grafikleri oluşturma için kullandım.
-## - shared_preferences:Uygulama kapatıldığında oturumun açık kalmasını sağlıyor  .
+### - supabase_flutter: Veritabanına bağlanmak .
+### - fl_chart:Grafikleri oluşturma için kullandım.
+### - shared_preferences:Uygulama kapatıldığında oturumun açık kalmasını sağlıyor  .
 
 
 

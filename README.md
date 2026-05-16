@@ -1,7 +1,8 @@
-
+# Fatura Takip Uygulaması
+## Öğrenci Bilgileri
 ### Ad Soyad:Yunus Bülbül
 ### Öğrenci no:243301010
-### Uygulama Adı:Fatura Takip
+
 
 # Test hesap Bilgileri
 ## Yönetici:

@@ -7,6 +7,7 @@ import 'fatura_musteri_sec_screen.dart';
 import 'login_screen.dart';
 import 'nakit_odeme_screen.dart';
 import 'birim_fiyat_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class YoneticiHomeScreen extends StatefulWidget {
 
   final int yoneticiId;
@@ -281,15 +282,7 @@ maxGelirY =
 ),
         actions: [
 
-          IconButton(
-
-            onPressed: () {},
-
-            icon: const Icon(
-              Icons.notifications_none,
-              color: Colors.black,
-            ),
-          ),
+         
 
           Padding(
 
@@ -719,9 +712,13 @@ return;
                 Icons.logout,
                 "Çıkış Yap",
                 false,
-               () async {
+    () async {
 
-  await Supabase.instance.client.auth.signOut();
+  final prefs =
+      await SharedPreferences
+          .getInstance();
+
+  await prefs.clear();
 
   if (context.mounted) {
 
@@ -731,7 +728,8 @@ return;
 
       MaterialPageRoute(
 
-        builder: (context) => const LoginScreen(),
+        builder: (context) =>
+            const LoginScreen(),
       ),
 
       (route) => false,

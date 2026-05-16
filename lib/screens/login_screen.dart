@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import 'register_screen.dart';
 import 'fatura_screen.dart';
 import 'yonetici_home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class LoginScreen extends StatefulWidget {
   final Function(bool)? onThemeChanged;
   final bool darkMode;
@@ -67,7 +68,19 @@ Future<void> login() async {
                 Text("Giriş başarılı"),
           ),
         );
+final prefs =
+    await SharedPreferences
+        .getInstance();
 
+await prefs.setInt(
+  'kullanici_id',
+  kullanici['kullanici_id'],
+);
+
+await prefs.setBool(
+  'yonetici_mi',
+  false,
+);
         Navigator.pushReplacement(
 
           context,
@@ -121,7 +134,24 @@ Future<void> login() async {
           .maybeSingle();
 
       if (response != null) {
+final prefs =
+    await SharedPreferences
+        .getInstance();
 
+await prefs.setInt(
+  'yonetici_id',
+  response['yonetici_id'],
+);
+
+await prefs.setInt(
+  'firma_id',
+  response['firma_id'],
+);
+
+await prefs.setBool(
+  'yonetici_mi',
+  true,
+);
         Navigator.pushReplacement(
 
           context,
@@ -226,9 +256,21 @@ Future<void> login() async {
                           });
                         },
                         child: Container(
-                          color: isCustomerSelected
-                              ? AppColors.primary
-                              : Colors.transparent,
+
+  decoration: BoxDecoration(
+
+    color: isCustomerSelected
+        ? AppColors.primary
+        : Colors.transparent,
+
+    borderRadius:
+        const BorderRadius.only(
+
+      topLeft: Radius.circular(10),
+
+      bottomLeft: Radius.circular(10),
+    ),
+  ),
                           child: Center(
                             child: Text(
                               'Müşteri',
@@ -249,10 +291,22 @@ Future<void> login() async {
                             isCustomerSelected = false;
                           });
                         },
-                        child: Container(
-                          color: !isCustomerSelected
-                              ? AppColors.primary
-                              : Colors.transparent,
+                        child:Container(
+
+  decoration: BoxDecoration(
+
+    color: !isCustomerSelected
+        ? AppColors.primary
+        : Colors.transparent,
+
+    borderRadius:
+        const BorderRadius.only(
+
+      topRight: Radius.circular(10),
+
+      bottomRight: Radius.circular(10),
+    ),
+  ),
                           child: Center(
                             child: Text(
                               'Yönetici',
@@ -326,17 +380,29 @@ Future<void> login() async {
                         ),
                       ),
                     ),
-                 TextButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const RegisterScreen(),
-      ),
-    );
-  },
-  child: const Text("Kayıt Ol"),
-),
+if (isCustomerSelected)
+
+  TextButton(
+
+    onPressed: () {
+
+      Navigator.push(
+
+        context,
+
+        MaterialPageRoute(
+
+          builder: (context) =>
+
+              const RegisterScreen(),
+        ),
+      );
+    },
+
+    child: const Text(
+      "Kayıt Ol",
+    ),
+  ),
                   ],
                 ),
               ),

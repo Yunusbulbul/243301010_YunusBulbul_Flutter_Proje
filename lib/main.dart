@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/login_screen.dart';
 import 'screens/yonetici_home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/fatura_screen.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -12,7 +15,57 @@ Future<void> main() async {
 
   runApp(MyApp());
 }
+Future<Widget> baslangicEkrani() async {
 
+  final prefs =
+      await SharedPreferences
+          .getInstance();
+
+  final yoneticiMi =
+      prefs.getBool(
+    'yonetici_mi',
+  );
+
+  if (yoneticiMi == true) {
+
+    final yoneticiId =
+        prefs.getInt(
+      'yonetici_id',
+    );
+
+    final firmaId =
+        prefs.getInt(
+      'firma_id',
+    );
+
+    if (yoneticiId != null &&
+        firmaId != null) {
+
+      return YoneticiHomeScreen(
+
+        yoneticiId:
+            yoneticiId,
+
+        firmaId:
+            firmaId,
+      );
+    }
+  }
+
+  final kullaniciId =
+      prefs.getInt(
+    'kullanici_id',
+  );
+
+  if (kullaniciId != null) {
+
+    return FaturalarScreen(
+      kullaniciId: kullaniciId,
+    );
+  }
+
+  return const LoginScreen();
+}
 
 class MyApp extends StatefulWidget {
   @override
@@ -32,7 +85,26 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
    return MaterialApp(
   debugShowCheckedModeBanner: false,
-  home: LoginScreen(),
+ home: FutureBuilder(
+
+  future: baslangicEkrani(),
+
+  builder: (context, snapshot) {
+
+    if (!snapshot.hasData) {
+
+      return const Scaffold(
+
+        body: Center(
+          child:
+              CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return snapshot.data!;
+  },
+),
 );
   }
 } 

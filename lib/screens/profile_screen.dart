@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 class ProfileScreen extends StatefulWidget {
   final int kullaniciId;
 
@@ -102,13 +102,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void cikisYap() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-      (route) => false,
-    );
-  }
+ Future<void> cikisYap() async {
+
+  final prefs =
+      await SharedPreferences
+          .getInstance();
+
+  await prefs.clear();
+
+  Navigator.pushAndRemoveUntil(
+
+    context,
+
+    MaterialPageRoute(
+
+      builder: (context) =>
+          LoginScreen(),
+    ),
+
+    (route) => false,
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -145,12 +159,7 @@ final textColor = Colors.black;
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
+       
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
@@ -197,35 +206,7 @@ final textColor = Colors.black;
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                InkWell(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Profil resmi değiştirme kısmı daha sonra bağlanacak'),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF4F0DF),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.edit, color: Color(0xFF0B4574)),
-                        SizedBox(width: 8),
-                        Text(
-                          'Profil Resmini Düzenle',
-                          style: TextStyle(fontSize: 17),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              
               ],
             ),
           ),
@@ -239,7 +220,7 @@ final textColor = Colors.black;
             children: [
               _infoRow(Icons.email, 'Email Adresi: $email', textColor),
               _infoRow(Icons.phone, 'Telefon Numarası: $telefon', textColor),
-              _infoRow(Icons.key, 'Şifre Değiştir', textColor),
+            
               _infoRow(Icons.badge, 'Kullanıcı ID: $kullaniciId', textColor),
             ],
           ),
@@ -274,9 +255,155 @@ final textColor = Colors.black;
             title: 'Hakkında',
             textColor: textColor,
             children: [
-              _infoRow(Icons.menu_book, 'Kullanım Koşulları', textColor),
-              _infoRow(Icons.shield, 'Gizlilik Politikası', textColor),
-              _infoRow(Icons.star, 'Uygulamayı Puanla', textColor),
+             _clickRow(
+
+  icon: Icons.menu_book,
+
+  text: 'Kullanım Koşulları',
+
+  value: '',
+
+  textColor: textColor,
+
+  onTap: () {
+
+    showDialog(
+
+      context: context,
+
+      builder: (context) {
+
+        return AlertDialog(
+
+          title: const Text(
+            'Kullanım Koşulları',
+          ),
+
+          content: const Text(
+  '''FATURA TAKİP UYGULAMASI KULLANIM KOŞULLARI
+Bu uygulama; su tüketimi, fatura oluşturma, ödeme takibi ve kullanıcı işlemlerinin yönetilmesi amacıyla geliştirilmiştir. Uygulamayı kullanan tüm kullanıcılar aşağıdaki koşulları kabul etmiş sayılır.
+1. Kullanıcı Sorumluluğu
+Kullanıcılar sisteme girdikleri bilgilerin doğruluğundan sorumludur. Yanlış veya eksik bilgi girilmesinden doğabilecek sorunlardan uygulama yönetimi sorumlu tutulamaz.
+
+2. Hesap Güvenliği
+Kullanıcı adı ve şifre bilgilerinin güvenliği kullanıcıya aittir. Hesap bilgilerinin üçüncü kişilerle paylaşılması önerilmez.
+
+3. Fatura ve Ödeme Bilgileri
+Uygulamada gösterilen tüketim, fatura ve ödeme bilgileri bilgilendirme amaçlıdır. Gerçek kurum verileri ile farklılık gösterebilir.
+
+4. Sistem Kullanımı
+Kullanıcılar uygulamayı kötüye kullanacak, sisteme zarar verecek veya diğer kullanıcıların kullanımını engelleyecek işlemler gerçekleştiremez.
+
+5. Hizmet Değişiklikleri
+Uygulama geliştiricileri gerekli gördüğü durumlarda sistem üzerinde güncelleme, bakım veya değişiklik yapma hakkını saklı tutar.
+
+6. Veri Saklama
+Kullanıcı işlemleri, giriş kayıtları ve fatura bilgileri sistem güvenliği ve hizmet kalitesinin artırılması amacıyla saklanabilir.
+Uygulamayı kullanmaya devam eden tüm kullanıcılar bu koşulları kabul etmiş sayılır.'''
+          
+          ),
+
+          actions: [
+
+            TextButton(
+
+              onPressed: () {
+                Navigator.pop(context);
+              },
+
+              child: const Text(
+                'Tamam',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  },
+),
+_clickRow(
+
+  icon: Icons.menu_book,
+
+  text: 'Gizlilik Politikası',
+
+  value: '',
+
+  textColor: textColor,
+
+  onTap: () {
+
+    showDialog(
+
+      context: context,
+
+      builder: (context) {
+
+        return AlertDialog(
+
+          title: const Text(
+            'Gizlilik Politikası',
+          ),
+
+          content: const Text(
+'''FATURA TAKİP UYGULAMASI GİZLİLİK POLİTİKASI
+
+Bu gizlilik politikası, kullanıcı bilgilerinin nasıl toplandığını, saklandığını ve korunduğunu açıklamaktadır.
+
+1. Toplanan Bilgiler
+Uygulama kapsamında aşağıdaki bilgiler saklanabilir:
+
+- Ad ve soyad
+- E-posta adresi
+- Telefon numarası
+- Kullanıcı giriş kayıtları
+- Tüketim ve fatura bilgileri
+
+2. Bilgilerin Kullanımı
+Toplanan bilgiler aşağıdaki amaçlarla kullanılmaktadır:
+
+- Kullanıcı doğrulama işlemleri
+- Fatura ve ödeme takibi
+- Sistem güvenliği
+- Hizmet kalitesinin geliştirilmesi
+
+3. Veri Güvenliği
+Kullanıcı verileri güvenli veri tabanı sistemlerinde saklanmaktadır. Yetkisiz erişimlere karşı gerekli teknik önlemler alınmaktadır.
+
+4. Üçüncü Taraf Paylaşımı
+Kullanıcı bilgileri, yasal zorunluluklar dışında üçüncü kişilerle paylaşılmaz.
+
+5. Çerez ve Oturum Bilgileri
+Uygulama güvenliği ve oturum yönetimi amacıyla giriş kayıtları tutulabilir.
+
+6. Kullanıcı Hakları
+Kullanıcılar kendi bilgilerine erişme, güncelleme ve gerektiğinde silinmesini talep etme hakkına sahiptir.
+
+7. Politika Güncellemeleri
+Gizlilik politikası gerekli durumlarda güncellenebilir. Yapılan değişiklikler uygulama üzerinden kullanıcılara sunulur.
+
+Bu uygulamayı kullanan tüm kullanıcılar yukarıdaki gizlilik politikasını kabul etmiş sayılır.'''
+          ),
+
+          actions: [
+
+            TextButton(
+
+              onPressed: () {
+                Navigator.pop(context);
+              },
+
+              child: const Text(
+                'Tamam',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  },
+),
+             
             ],
           ),
 
@@ -375,7 +502,7 @@ final textColor = Colors.black;
               style: TextStyle(fontSize: 17, color: textColor),
             ),
           ),
-          const Icon(Icons.edit, color: Color(0xFF0B4574), size: 20),
+         
         ],
       ),
     );

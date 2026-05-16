@@ -1,27 +1,27 @@
 # fatura_takip
- Ad Soyad:Yunus Bülbül
- Öğrenci no:243301010
- Uygulama Adı:Fatura Takip
+## Ad Soyad:Yunus Bülbül
+## Öğrenci no:243301010
+## Uygulama Adı:Fatura Takip
 
 # Test hesap Bilgileri
 ## Yönetici:
- 1. Kullanıcı adı: vaski_admin
-   şifre:1234
- 2. Kullanıcı adı: iski_admin
-   şifre:1234
+### 1. Kullanıcı adı: vaski_admin
+### şifre:1234
+### 2. Kullanıcı adı: iski_admin
+### şifre:1234
 ## Müşteri :
- 1. email:yunusbulbul@gmail.com
-   şifre:yunus123
- 2. email:selin.akar@gmail.com
-   şifre:selin456
+### 1. email:yunusbulbul@gmail.com
+### şifre:yunus123
+### 2. email:selin.akar@gmail.com
+### şifre:selin456
 
 
 
 
 # Kullanılan Paketler:
-- supabase_flutter: Veritabanına bağlanmak .
-- fl_chart:Grafikleri oluşturma için kullandım.
-- shared_preferences:Uygulama kapatıldığında oturumun açık kalmasını sağlıyor  .
+## - supabase_flutter: Veritabanına bağlanmak .
+## - fl_chart:Grafikleri oluşturma için kullandım.
+## - shared_preferences:Uygulama kapatıldığında oturumun açık kalmasını sağlıyor  .
 
 
 
